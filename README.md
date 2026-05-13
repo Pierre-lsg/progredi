@@ -69,9 +69,7 @@ Deploying the `dist/` folder to a web server is your responsibility.
 
 The application is available wherever you deploy the `dist/` directory.
 
-You can deploy it to your web server or to a hosting service by modifying the `package.json` and `svelte.config.js` files.
-
-An example for development is available on my [GitHub space](https://pierre-lsg.github.io/progredi/).
+You can deploy it to your web server.
 
 If you deploy on an apache server, an .htaccess is deployed and need to activate the rewrite module.
 
