@@ -2,6 +2,15 @@
 
 Ce document recense les fonctionnalités et améliorations envisagées pour les futures versions de l'application.
 
+## 📊 Métriques et Statistiques
+- [ ] **Tableau de bord avancé** : Graphiques détaillés avec évolution sur plusieurs jours/semaines.
+- [ ] **Statistiques par catégorie** : Taux de réussite ventilé par catégorie.
+- [ ] **Filtres de date** : Afficher les statistiques pour une période personnalisée.
+
+## 💻 OS
+- [ ] **Widget Android** : Afficher les objectifs du jour sur le bureau Android.
+- [ ] **Widget iOS** : Afficher les objectifs du jour sur le bureau iOS.
+
 ## ⚙️ Technique et Synchronisation
 - [ ] **Backend / Sync** : Synchroniser les données entre plusieurs appareils via un compte utilisateur.
 

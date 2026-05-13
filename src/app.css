@@ -83,6 +83,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   min-height: 100vh;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 h1, h2, h3, h4 {
@@ -93,6 +94,7 @@ h1, h2, h3, h4 {
 button {
   font-family: inherit;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .container {

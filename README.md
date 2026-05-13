@@ -1,43 +1,83 @@
-# Svelte + Vite
+# Presentation
 
-This template should help get you started developing with Svelte in Vite.
+Progredi is a habit tracker application. It helps you track your habits and build positive habits.
 
-## Recommended IDE Setup
+Progredi is built with Svelte and TypeScript. It is a static application.  
+Data is stored on ther user's terminal
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+Documentation is in preparation and will soon be available in the [docs](./docs) directory.
 
-## Need an official Svelte framework?
+# License
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+This project is licensed under MIT – see the [LICENSE](./LICENSE) file for more details.
 
-## Technical considerations
+# Development
 
-**Why use this over SvelteKit?**
+## Prerequisites
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+- [git](https://git-scm.com/install)
+- [node.js](https://nodejs.org/en/download)
+- [npm](https://nodejs.org/en/download)
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+## Creating the project
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+This is a standard Svelte project. To build it, run:
 
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `checkJs` in the JS template?**
-
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```sh
+# Clone the progredi project
+git clone https://github.com/Pierre-lsg/progredi
+# Move into the project tree
+cd progredi/
+# Install dependencies
+npm install
 ```
+
+## Test locally
+
+To test the application locally, run the command `npm run dev`.
+
+```sh
+# Test on localhost
+npm run dev
+```
+
+ou
+
+```sh
+# Test on local network
+npm run dev -- --host
+```
+
+## Generate the final application
+
+Among the commands for `npm run` described in the `package.json` file, we find:
+
+- **build** – to build the static application to deploy on your web server
+- **preview** – to launch a local test web server
+
+The functional application is produced by executing:
+
+```sh
+npm run build
+```
+
+Deploying the `dist/` folder to a web server is your responsibility.
+
+# Production
+
+## Installing the application
+
+The application is available wherever you deploy the `dist/` directory.
+
+You can deploy it to your web server or to a hosting service by modifying the `package.json` and `svelte.config.js` files.
+
+An example for development is available on my [GitHub space](https://pierre-lsg.github.io/progredi/).
+
+If you deploy on an apache server, an .htaccess is deployed and need to activate the rewrite module.
+
+```sh
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+```
+
+For others webservers, think about redirecting to index.html to avoid 404 error.
