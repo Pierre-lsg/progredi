@@ -31,13 +31,13 @@
 
   const frequencies: Objective['frequency'][] = ['daily', 'weekly', 'monthly', 'yearly', 'once'];
   const priorities: { id: Priority, label: string, color: string }[] = [
-    { id: 'low', label: 'Basse', color: 'var(--success)' },
-    { id: 'medium', label: 'Moyenne', color: 'var(--warning)' },
-    { id: 'high', label: 'Élevée', color: 'var(--danger)' }
+    { id: 'low', label: $t.priorityLow, color: 'var(--success)' },
+    { id: 'medium', label: $t.priorityMedium, color: 'var(--warning)' },
+    { id: 'high', label: $t.priorityHigh, color: 'var(--danger)' }
   ];
   const daysOfWeek = [
-    { id: 1, label: 'Lun' }, { id: 2, label: 'Mar' }, { id: 3, label: 'Mer' },
-    { id: 4, label: 'Jeu' }, { id: 5, label: 'Ven' }, { id: 6, label: 'Sam' }, { id: 0, label: 'Dim' }
+    { id: 1, label: $t.daysShort[1] }, { id: 2, label: $t.daysShort[2] }, { id: 3, label: $t.daysShort[3] },
+    { id: 4, label: $t.daysShort[4] }, { id: 5, label: $t.daysShort[5] }, { id: 6, label: $t.daysShort[6] }, { id: 0, label: $t.daysShort[0] }
   ];
 
   function toggleEditDay(id: number) {
@@ -103,7 +103,7 @@
       const month = new Date(2024, o.monthOfYear ?? 0, 1).toLocaleDateString($lang, {month: 'short'});
       base = `${$t.yearly} (${o.dayOfMonth} ${month})`;
     }
-    else if (o.frequency === 'once') base = `Ponctuel (${o.date})`;
+    else if (o.frequency === 'once') base = `${$t.once} (${o.date})`;
     
     if (o.reminderTime) return `${base} • 🔔 ${o.reminderTime}`;
     return base;
@@ -151,11 +151,11 @@
     onkeydown={handleKeyDown}
     role="button"
     tabindex={(!isEditing && !isDeleted) ? 0 : -1}
-    aria-label="Editer l'objectif"
+    aria-label={$t.editObjective}
     style="border-left: 4px solid {priorities.find(p => p.id === currentPriority)?.color}"
   >
     {#if !isDeleted && !isEditing}
-      <div class="grip" title="Glisser pour réorganiser"><GripVertical size={14}/></div>
+      <div class="grip" title={$t.dragToReorder}><GripVertical size={14}/></div>
     {/if}
 
     <button class="check-btn" onclick={toggleComplete} aria-label={$t.completed} disabled={isDeleted || isEditing} tabindex="-1">
@@ -172,14 +172,14 @@
               {#each priorities as p}<option value={p.id}>{p.label}</option>{/each}
             </select>
             <select bind:value={editState.category} class="small-select">{#each allCategories as cat}<option value={cat}>{defaultCategories.includes(cat) ? ($t.categories as any)[cat] : cat}</option>{/each}</select>
-            <select bind:value={editState.frequency} class="small-select">{#each frequencies as f}<option value={f}>{f === 'once' ? 'Ponctuel' : $t[f]}</option>{/each}</select>
+            <select bind:value={editState.frequency} class="small-select">{#each frequencies as f}<option value={f}>{f === 'once' ? $t.once : $t[f]}</option>{/each}</select>
           </div>
 
           <div class="edit-row" role="none">
             <div class="time-picker-custom" role="none">
               <Bell size={14}/>
               <input type="time" bind:value={editState.reminderTime} class="small-input-time" />
-              <span>{editState.reminderTime || 'Pas de rappel'}</span>
+              <span>{editState.reminderTime || $t.noReminder}</span>
             </div>
             {#if editState.frequency === 'once'}
               <div class="date-picker-custom small" role="none"><Calendar size={14}/><input type="date" bind:value={editState.date} class="input-sub-date" /><span>{editState.date}</span></div>
@@ -197,8 +197,8 @@
         <div class="header" role="none">
           <span class="category">{defaultCategories.includes(objective.category) ? ($t.categories as any)[objective.category] : objective.category}</span>
           <span class="frequency">{getFrequencyLabel(objective)}</span>
-          {#if isDeleted}<span class="archived-badge"><Archive size={12}/> Archivé</span>{/if}
-          {#if isSkipped}<span class="skipped-badge">Écarté</span>{/if}
+          {#if isDeleted}<span class="archived-badge"><Archive size={12}/> {$t.archived}</span>{/if}
+          {#if isSkipped}<span class="skipped-badge">{$t.skipped}</span>{/if}
         </div>
         <h3 class="title">{objective.title}</h3>
       {/if}
@@ -206,11 +206,11 @@
 
     {#if !isEditing && !isDeleted}
       <div class="actions-right" role="none">
-        <button class="favorite-btn" class:active={objective.isFavorite} onclick={toggleFavorite} title="Favori">
+        <button class="favorite-btn" class:active={objective.isFavorite} onclick={toggleFavorite} title={$t.favorite}>
           <Flag size={18} fill={objective.isFavorite ? 'var(--danger)' : 'none'} stroke={objective.isFavorite ? 'var(--danger)' : 'currentColor'} />
         </button>
-        <button class="skip-btn" class:active={isSkipped} onclick={toggleSkip} title="Écarter" tabindex="-1"><FastForward size={18} /></button>
-        <button class="delete-btn" onclick={(e) => { e.stopPropagation(); if (confirm('Voulez-vous supprimer cet objectif ?')) objectives.remove(objective.id); }} tabindex="-1"><Trash2 size={18} /></button>
+        <button class="skip-btn" class:active={isSkipped} onclick={toggleSkip} title={$t.skip} tabindex="-1"><FastForward size={18} /></button>
+        <button class="delete-btn" onclick={(e) => { e.stopPropagation(); if (confirm($t.confirmDelete)) objectives.remove(objective.id); }} tabindex="-1"><Trash2 size={18} /></button>
       </div>
     {/if}
   </div>
@@ -248,12 +248,9 @@
   .edit-panel { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; background: var(--bg-primary); padding: 0.5rem; border-radius: 0.5rem; border: 1px solid var(--accent-primary); z-index: 100; }
   .edit-input { background: none; border: none; border-bottom: 1px solid var(--border-color); color: var(--text-primary); padding: 0.25rem; font-size: 1rem; width: 100%; outline: none; }
   .edit-row { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-  .small-select, .small-input { background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); font-size: 0.8rem; padding: 0.2rem; border-radius: 0.3rem; outline: none; }
   .priority-select { font-weight: 700; }
   .time-picker-custom { position: relative; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.3rem; padding: 0.2rem 0.5rem; color: var(--accent-primary); font-size: 0.8rem; }
   .small-input-time { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-  .chip { background: var(--bg-secondary); border: 1px solid var(--border-color); font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 1rem; color: var(--text-secondary); }
-  .chip.active { background: var(--accent-primary); color: white; }
   .date-picker-custom { position: relative; display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.3rem; padding: 0.2rem 0.5rem; color: var(--accent-primary); font-size: 0.8rem; }
   .input-sub-date { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
   .actions-right { display: flex; gap: 0.1rem; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }

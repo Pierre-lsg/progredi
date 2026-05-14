@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { X, Moon, Sun, Monitor, Download, Upload, Trash2, Bell, BellOff, Clock } from 'lucide-svelte';
+  import { X, Moon, Sun, Monitor, Download, Upload, Trash2, Bell, BellOff, Clock, Languages } from 'lucide-svelte';
   import { theme } from '$lib/stores/theme';
   import { objectives } from '$lib/stores/objectives';
   import { logs } from '$lib/stores/logs';
-  import { t } from '$lib/i18n';
+  import { t, lang, type Language } from '$lib/i18n';
   import { notificationSettings, notifications } from '$lib/stores/notifications';
   import Card from '$lib/components/ui/Card.svelte';
   import Button from '$lib/components/ui/Button.svelte';
@@ -71,20 +71,20 @@
   tabindex="-1"
 >
   <div class="modal-content" in:fly={{ y: 20, duration: 300 }}>
-    <header class="glass">
+    <header class="panel-header">
       <h2>{$t.settings}</h2>
       <button class="close-btn" onclick={close}><X size={24} /></button>
     </header>
 
-    <div class="settings-body">
+    <div class="panel-body">
       <!-- Section Notifications -->
       <section class="section">
-        <h3><Bell size={18} /> Notifications</h3>
+        <h3><Bell size={18} /> {$t.notifications}</h3>
         <Card>
           <div class="setting-item">
             <div class="setting-info">
-              <span class="label">Activer les rappels</span>
-              <span class="desc">Recevoir des notifications pour vos objectifs</span>
+              <span class="label">{$t.enableReminders}</span>
+              <span class="desc">{$t.remindersDesc}</span>
             </div>
             <button class="toggle" class:active={$notificationSettings.enabled && $notificationSettings.permission === 'granted'} onclick={toggleNotifications}>
               {#if $notificationSettings.permission === 'granted'}
@@ -98,8 +98,8 @@
           {#if $notificationSettings.enabled && $notificationSettings.permission === 'granted'}
             <div class="setting-item border-top">
               <div class="setting-info">
-                <span class="label">Bilan du soir</span>
-                <span class="desc">Récapitulatif des tâches restantes</span>
+                <span class="label">{$t.eveningSummary}</span>
+                <span class="desc">{$t.eveningSummaryDesc}</span>
               </div>
               <input type="checkbox" bind:checked={$notificationSettings.eveningSummary} />
             </div>
@@ -107,7 +107,7 @@
             {#if $notificationSettings.eveningSummary}
               <div class="setting-item border-top">
                 <div class="setting-info">
-                  <span class="label">Heure du bilan</span>
+                  <span class="label">{$t.summaryTime}</span>
                 </div>
                 <div class="time-input-wrapper">
                   <Clock size={16} />
@@ -122,13 +122,33 @@
       <!-- Section Thème -->
       <section class="section">
         <h3><Sun size={18} /> {$t.theme}</h3>
-        <div class="theme-grid">
-          <button class="theme-btn" class:active={$theme === 'light'} onclick={() => theme.set('light')}>Clair</button>
-          <button class="theme-btn" class:active={$theme === 'dark'} onclick={() => theme.set('dark')}>Sombre</button>
-          <button class="theme-btn cyber" class:active={$theme === 'cyber'} onclick={() => theme.set('cyber')}>Cyber</button>
-          <button class="theme-btn paper" class:active={$theme === 'paper'} onclick={() => theme.set('paper')}>Paper</button>
-          <button class="theme-btn ocean" class:active={$theme === 'ocean'} onclick={() => theme.set('ocean')}>Ocean</button>
-        </div>
+        <select 
+          value={$theme} 
+          onchange={(e) => theme.set(e.currentTarget.value as any)}
+          class="settings-select"
+        >
+          <option value="light">☀️ {$t.themes.light}</option>
+          <option value="dark">🌙 {$t.themes.dark}</option>
+          <option value="cyber">⚡ {$t.themes.cyber}</option>
+          <option value="paper">📜 {$t.themes.paper}</option>
+          <option value="ocean">🌊 {$t.themes.ocean}</option>
+        </select>
+      </section>
+      
+      <!-- Section Langue -->
+      <section class="section">
+        <h3><Languages size={18} /> {$t.language}</h3>
+        <select 
+          value={$lang} 
+          onchange={(e) => lang.set(e.currentTarget.value as Language)}
+          class="settings-select"
+        >
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+          <option value="es">🇪🇸 Español</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="it">🇮🇹 Italiano</option>
+        </select>
       </section>
 
       <!-- Section Données -->
@@ -150,11 +170,7 @@
 </div>
 
 <style>
-  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); z-index: 2000; display: flex; justify-content: center; overflow-y: auto; padding: 1rem; }
-  .modal-content { width: 100%; max-width: 500px; height: fit-content; margin-top: 2rem; margin-bottom: 2rem; }
-  header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; position: sticky; top: 0; z-index: 10; border-radius: 1.25rem 1.25rem 0 0; }
-  .close-btn { background: none; border: none; color: var(--text-primary); }
-  .settings-body { background: var(--bg-primary); padding: 1.5rem; border-radius: 0 0 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 2rem; }
+  .settings-body { display: flex; flex-direction: column; gap: 2rem; }
   .section h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
   .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; }
   .setting-info { display: flex; flex-direction: column; gap: 0.2rem; }
@@ -165,9 +181,6 @@
   .toggle.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); }
   .time-input-wrapper { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 0.5rem; border: 1px solid var(--border-color); }
   .small-time { background: none; border: none; color: var(--text-primary); font-family: inherit; font-size: 0.9rem; outline: none; }
-  .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.75rem; }
-  .theme-btn { padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; transition: all 0.2s; }
-  .theme-btn.active { border-color: var(--accent-primary); background: var(--accent-primary); color: white; }
   .data-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .btn-secondary { display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.6rem; border-radius: 0.75rem; font-weight: 600; cursor: pointer; }
   .danger-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.75rem; border-radius: 0.75rem; border: 1px solid var(--danger); background: transparent; color: var(--danger); font-weight: 600; margin-top: 1rem; }

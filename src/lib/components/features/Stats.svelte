@@ -15,10 +15,10 @@
   let canShare = $derived(typeof navigator !== 'undefined' && !!navigator.share);
 
   async function shareProgress() {
-    const text = `Aujourd'hui sur Progredi, j'ai un taux de réussite de ${Math.round(stats.avgSuccess)}% ! J'ai déjà validé ${stats.totalCompleted} objectifs au total. 🚀`;
+    const text = $t.shareStatsText(Math.round(stats.avgSuccess), stats.totalCompleted);
     try {
       await navigator.share({
-        title: 'Ma progression sur Progredi',
+        title: $t.title,
         text: text,
         url: window.location.href
       });
@@ -63,41 +63,41 @@
   tabindex="-1"
 >
   <div class="modal-content" in:fly={{ y: 20, duration: 300 }}>
-    <header class="glass">
+    <header class="glass panel-header">
       <div class="header-title">
         <Activity size={24} color="var(--accent-primary)" />
-        <h2>Statistiques</h2>
+        <h2>{$t.stats}</h2>
       </div>
-      <div class="header-actions">
+      <div class="header-actions" style="display: flex; gap: 0.5rem;">
         {#if canShare}
-          <button class="action-btn" onclick={shareProgress} title="Partager mes stats"><Share2 size={20} /></button>
+          <button class="action-btn" onclick={shareProgress} title={$t.shareStats}><Share2 size={20} /></button>
         {/if}
-        <button class="close-btn" onclick={close}><X size={24} /></button>
+        <button class="close-btn" onclick={close} aria-label="Close"><X size={24} /></button>
       </div>
     </header>
 
-    <div class="stats-body">
+    <div class="panel-body">
       <!-- Top Cards -->
       <div class="top-cards">
         <Card>
           <div class="stat-card">
             <TrendingUp size={20} color="var(--success)" />
             <span class="value">{Math.round(stats.avgSuccess)}%</span>
-            <span class="label">Réussite (7j)</span>
+            <span class="label">{$t.successRate}</span>
           </div>
         </Card>
         <Card>
           <div class="stat-card">
             <Trophy size={20} color="var(--warning)" />
             <span class="value">{stats.totalCompleted}</span>
-            <span class="label">Total validés</span>
+            <span class="label">{$t.totalValid}</span>
           </div>
         </Card>
         <Card>
           <div class="stat-card">
             <Flame size={20} color="var(--danger)" />
             <span class="value">{stats.streaks[0]?.count || 0}j</span>
-            <span class="label">Meilleure série</span>
+            <span class="label">{$t.bestStreak}</span>
           </div>
         </Card>
       </div>
@@ -106,7 +106,7 @@
       <section class="section">
         <div class="section-header">
           <Activity size={18} />
-          <h3>Activité Hebdomadaire</h3>
+          <h3>{$t.weeklyActivity}</h3>
         </div>
         <Card>
           <div class="chart-container">
@@ -129,7 +129,7 @@
         <section class="section">
           <div class="section-header">
             <PieChart size={18} />
-            <h3>Par Catégorie</h3>
+            <h3>{$t.byCategory}</h3>
           </div>
           <Card>
             <div class="donut-section">
@@ -162,7 +162,7 @@
         <section class="section">
           <div class="section-header">
             <Flame size={18} />
-            <h3>Meilleures Séries</h3>
+            <h3>{$t.bestStreaks}</h3>
           </div>
           <div class="streaks-list">
             {#each stats.streaks as streak}
@@ -170,7 +170,7 @@
                 <div class="streak-item">
                   <div class="streak-info">
                     <span class="streak-title">{streak.title}</span>
-                    <span class="streak-days">{streak.count} jours consécutifs</span>
+                    <span class="streak-days">{streak.count} {$t.consecutiveDays}</span>
                   </div>
                   <div class="streak-flame" class:hot={streak.count > 5}>
                     <Flame size={16} fill="currentColor" />
@@ -178,7 +178,7 @@
                 </div>
               </Card>
             {:else}
-              <p class="empty-msg">Validez des objectifs plusieurs jours de suite pour créer des séries !</p>
+              <p class="empty-msg">{$t.streakEmpty}</p>
             {/each}
           </div>
         </section>
@@ -188,41 +188,12 @@
 </div>
 
 <style>
-  .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(12px);
-    z-index: 2000;
-    display: flex;
-    justify-content: center;
-    overflow-y: auto;
-    padding: 1rem;
-  }
 
-  .modal-content {
-    width: 100%;
-    max-width: 700px;
-    height: fit-content;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-radius: 1.25rem 1.25rem 0 0;
-  }
 
   .header-title { display: flex; align-items: center; gap: 0.75rem; }
   h2 { font-size: 1.25rem; margin: 0; color: var(--text-primary); }
 
-  .close-btn, .action-btn {
+  .close-btn {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -233,11 +204,9 @@
     justify-content: center;
     transition: all 0.2s;
   }
+  .close-btn:hover { background: var(--bg-primary); }
 
-  .action-btn { color: var(--accent-primary); }
-  .action-btn:hover { background: var(--accent-primary); color: white; }
-
-  .stats-body {
+  .panel-body {
     background: var(--bg-primary);
     padding: 1.5rem;
     border-radius: 0 0 1.25rem 1.25rem;
@@ -265,12 +234,10 @@
   .stat-card .label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
 
   .section { display: flex; flex-direction: column; gap: 1rem; }
-  .section-header { display: flex; align-items: center; gap: 0.5rem; color: var(--accent-primary); }
-  .section-header h3 { font-size: 1rem; margin: 0; color: var(--text-primary); }
 
   .chart-container { height: 200px; display: flex; align-items: flex-end; padding: 1rem 0; }
   .bar-chart { display: flex; justify-content: space-around; align-items: flex-end; width: 100%; height: 100%; gap: 0.5rem; }
-  .bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+  .bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
   .bar-value {
     width: 100%;
     max-width: 40px;

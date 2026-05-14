@@ -39,12 +39,12 @@
   let allCategories = $derived([...defaultCategories, ...$customCategories]);
 
   const frequencies = [
-    { id: "all", label: "Toutes les fréquences" },
+    { id: "all", label: $t.allFrequencies },
     { id: "daily", label: $t.daily },
     { id: "weekly", label: $t.weekly },
     { id: "monthly", label: $t.monthly },
     { id: "yearly", label: $t.yearly },
-    { id: "once", label: "Ponctuel" },
+    { id: "once", label: $t.once },
   ];
 
   function changeDate(days: number) {
@@ -94,11 +94,17 @@
     return true;
   }
 
-  function getObjectiveStatus(objective: Objective, date: Date, allLogs: Log[]) {
+  function getObjectiveStatus(
+    objective: Objective,
+    date: Date,
+    allLogs: Log[],
+  ) {
     const dateStr = date.toISOString().split("T")[0];
-    const log = allLogs.find(l => l.objectiveId === objective.id && l.date === dateStr);
-    if (log?.status === 'completed') return 2;
-    if (log?.status === 'skipped') return 1;
+    const log = allLogs.find(
+      (l) => l.objectiveId === objective.id && l.date === dateStr,
+    );
+    if (log?.status === "completed") return 2;
+    if (log?.status === "skipped") return 1;
     return 0;
   }
 
@@ -125,13 +131,14 @@
       .sort((a, b) => {
         const statusA = getObjectiveStatus(a, selectedDate, $logs);
         const statusB = getObjectiveStatus(b, selectedDate, $logs);
-        
+
         if (statusA !== statusB) return statusA - statusB;
 
-        if (statusA === 0) { // Uniquement pour les actifs
+        if (statusA === 0) {
+          // Uniquement pour les actifs
           if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
         }
-        
+
         if (sortBy === "priority") {
           const pMap = { high: 3, medium: 2, low: 1 };
           const pA = pMap[a.priority || "low"];
@@ -147,11 +154,14 @@
 
   let stats = $derived({
     total: visibleOnDate.length,
-    done: visibleOnDate.filter((o) => getObjectiveStatus(o, selectedDate, $logs) === 2)
-      .length,
+    done: visibleOnDate.filter(
+      (o) => getObjectiveStatus(o, selectedDate, $logs) === 2,
+    ).length,
   });
 
-  let canShare = $derived(typeof navigator !== 'undefined' && !!navigator.share);
+  let canShare = $derived(
+    typeof navigator !== "undefined" && !!navigator.share,
+  );
 
   function cycleSort() {
     const modes: ("manual" | "priority" | "category")[] = [
@@ -164,22 +174,22 @@
   }
 
   function getSortLabel() {
-    if (sortBy === "manual") return "Tri Manuel";
-    if (sortBy === "priority") return "Tri Priorité";
-    if (sortBy === "category") return "Tri Catégorie";
+    if (sortBy === "manual") return $t.sortManual;
+    if (sortBy === "priority") return $t.sortPriority;
+    if (sortBy === "category") return $t.sortCategory;
     return "";
   }
 
   async function shareToday() {
-    const text = `Aujourd'hui sur Progredi (${dateStr}), j'ai déjà validé ${stats.done} objectifs sur ${stats.total} ! 🎯`;
+    const text = $t.shareTodayText(dateStr, stats.done, stats.total);
     try {
       await navigator.share({
-        title: 'Ma journée sur Progredi',
+        title: $t.title,
         text: text,
-        url: window.location.href
+        url: window.location.href,
       });
     } catch (err) {
-      console.log('Erreur partage:', err);
+      console.log("Erreur partage:", err);
     }
   }
 
@@ -197,35 +207,67 @@
     objectives.reorder(newObs);
     sortBy = "manual";
   }
+
+  // Swipe logic
+  let touchStartX = 0;
+  function handleTouchStart(e: TouchEvent) {
+    touchStartX = e.touches[0].clientX;
+  }
+  function handleTouchEnd(e: TouchEvent) {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchEndX - touchStartX;
+    const threshold = 50; // pixels requis pour déclencher le swipe
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0)
+        changeDate(-1); // Swipe à droite -> jour précédent
+      else changeDate(1); // Swipe à gauche -> jour suivant
+    }
+  }
 </script>
 
 <div class="dashboard animate-in">
-  <div class="date-selector">
-    <button onclick={() => changeDate(-1)} aria-label="Jour précédent"
-      ><ChevronLeft size={24} /></button
-    >
+  <div class="date-nav">
+    <button class="icon-btn" onclick={() => changeDate(-1)}>
+      <ChevronLeft size={24} />
+    </button>
     <div class="date-info">
-      <div class="date-picker-wrapper">
-        <h2 class="date-display">{dateStr}</h2>
+      <div class="date-header">
+        <span class="date-display">
+          {dateStr}
+        </span>
         <input
           type="date"
+          class="date-input-hidden"
           value={dateValue}
-          oninput={handleDateInput}
-          class="date-input"
+          onchange={handleDateInput}
         />
-      </div>
-      <div class="progress-container">
-        <p class="progress">{stats.done} / {stats.total} {$t.completed}</p>
-        {#if canShare}
-          <button class="share-mini-btn" onclick={shareToday} title="Partager ma journée">
+        {#if !canShare}
+          <button
+            class="share-mini-btn"
+            onclick={shareToday}
+            title={$t.shareStats}
+          >
             <Share2 size={12} />
           </button>
         {/if}
       </div>
+      <div
+        class="swipe-zone"
+        role="button"
+        tabindex="-1"
+        aria-label="Swipe to change date"
+        ontouchstart={handleTouchStart}
+        ontouchend={handleTouchEnd}
+      >
+        <div class="progress-container">
+          <p class="progress">{stats.done} / {stats.total} {$t.completed}</p>
+        </div>
+      </div>
     </div>
-    <button onclick={() => changeDate(1)} aria-label="Jour suivant"
-      ><ChevronRight size={24} /></button
-    >
+    <button class="icon-btn" onclick={() => changeDate(1)}>
+      <ChevronRight size={24} />
+    </button>
   </div>
 
   <div class="stats-bar">
@@ -245,26 +287,28 @@
         <input
           type="text"
           bind:value={searchQuery}
-          placeholder="Rechercher un objectif..."
-          class="search-input"
+          placeholder={$t.searchPlaceholder}
+          class="input-sub search-input"
         />
       </div>
       <div class="filter-actions">
         <button
-          class="filter-btn"
-          class:active={sortBy !== "manual"}
+          class="icon-btn {sortBy !== 'manual' ? 'active' : ''}"
           onclick={cycleSort}
           title={getSortLabel()}
         >
-          {#if sortBy === "manual"}<ListOrdered size={18} />
-          {:else if sortBy === "priority"}<BarChart2 size={18} />
-          {:else}<AlignLeft size={18} />{/if}
+          {#if sortBy === "priority"}
+            <ListOrdered size={20} />
+          {:else if sortBy === "category"}
+            <AlignLeft size={20} />
+          {:else}
+            <ArrowUpDown size={20} />
+          {/if}
         </button>
         <button
-          class="toggle-completed"
-          class:active={hideCompleted}
+          class="icon-btn {hideCompleted ? 'active' : ''}"
           onclick={() => (hideCompleted = !hideCompleted)}
-          title={hideCompleted ? "Afficher tout" : "Masquer complétés"}
+          title={hideCompleted ? $t.showAll : $t.hideCompleted}
         >
           {#if hideCompleted}<EyeOff size={18} />{:else}<Eye size={18} />{/if}
         </button>
@@ -275,7 +319,7 @@
       <div class="select-wrapper">
         <Filter size={14} class="select-icon" />
         <select bind:value={categoryFilter} class="filter-select">
-          <option value="all">Toutes les catégories</option>
+          <option value="all">{$t.allCategories}</option>
           {#each allCategories as cat}
             <option value={cat}
               >{defaultCategories.includes(cat)
@@ -304,7 +348,7 @@
         <p>{$t.noObjectives}</p>
         <p class="sub">
           {#if searchQuery || categoryFilter !== "all" || frequencyFilter !== "all"}
-            Aucun résultat pour ces filtres.
+            {$t.noResults}
           {:else}
             {hideCompleted && stats.done > 0 ? $t.allDone : $t.startAdding}
           {/if}
@@ -333,30 +377,37 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    padding-bottom: 2rem;
   }
-  .date-selector {
+  .date-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+  }
+  .date-header {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  .date-info {
     text-align: center;
-  }
-  .date-selector button {
-    background: none;
-    border: none;
-    color: var(--accent-primary);
-    padding: 0.5rem;
-  }
-  .date-picker-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
-    display: inline-block;
     cursor: pointer;
   }
   .date-display {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
     text-transform: capitalize;
-    color: var(--accent-primary);
   }
-  .date-input {
+  .date-input-hidden {
     position: absolute;
     top: 0;
     left: 0;
@@ -374,7 +425,16 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 0.25rem;
+  }
+  .swipe-zone {
+    width: 100%;
+    padding: 0.5rem 0;
+    touch-action: pan-y; /* Permet le scroll vertical mais bloque le scroll horizontal par défaut pour notre swipe */
+  }
+  .btn-icon.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
   }
   .share-mini-btn {
     background: var(--bg-secondary);
@@ -393,30 +453,7 @@
     color: white;
     border-color: var(--accent-primary);
   }
-  .stats-bar {
-    height: 8px;
-    background: var(--bg-secondary);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      var(--accent-primary),
-      var(--accent-secondary)
-    );
-    transition: width 0.4s;
-  }
 
-  .filters-container {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    border-radius: 1rem;
-    border: 1px solid var(--border-color);
-  }
   .search-row {
     display: flex;
     align-items: center;
@@ -437,41 +474,12 @@
     pointer-events: none;
   }
   .search-input {
-    width: 100%;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    padding: 0.6rem 0.75rem 0.6rem 2.5rem;
-    color: var(--text-primary);
-    outline: none;
     font-size: 0.9rem;
-  }
-  .search-input:focus {
-    border-color: var(--accent-primary);
   }
 
   .filter-actions {
     display: flex;
     gap: 0.4rem;
-  }
-  .filter-btn,
-  .toggle-completed {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 0.6rem;
-    border-radius: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    min-width: 42px;
-  }
-  .filter-btn.active,
-  .toggle-completed.active {
-    background: var(--accent-primary);
-    color: white;
-    border-color: var(--accent-primary);
   }
 
   .select-row {
@@ -494,6 +502,16 @@
     font-size: 0.85rem;
     outline: none;
     appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+  }
+  .select-wrapper .select-icon {
+    position: absolute;
+    left: 0.6rem;
+    color: var(--text-secondary);
+    pointer-events: none;
   }
   .select-wrapper:last-child .filter-select {
     padding-left: 0.75rem;
@@ -523,8 +541,5 @@
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-secondary);
-  }
-  .actions {
-    margin-top: 2rem;
   }
 </style>

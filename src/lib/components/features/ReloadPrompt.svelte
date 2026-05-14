@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { useRegisterSW } from 'virtual:pwa-register/svelte';
-  import { RefreshCw, X, Download } from 'lucide-svelte';
-  import { fade, fly } from 'svelte/transition';
-  import Button from '$lib/components/ui/Button.svelte';
+  import { useRegisterSW } from "virtual:pwa-register/svelte";
+  import { RefreshCw, X, Download } from "lucide-svelte";
+  import { fade, fly } from "svelte/transition";
+  import { t } from "$lib/i18n";
+  import Button from "$lib/components/ui/Button.svelte";
 
   const { needRefresh, updateServiceWorker } = useRegisterSW({
     onRegistered(r) {
-      console.log('SW Registered: ', r);
+      console.log("SW Registered: ", r);
     },
     onRegisterError(error) {
-      console.log('SW registration error', error);
+      console.log("SW registration error", error);
     },
   });
 
@@ -25,14 +26,18 @@
         <RefreshCw size={24} class="spin" />
       </div>
       <div class="text">
-        <span class="title">Nouvelle version !</span>
-        <span class="message">Mettez à jour pour profiter des dernières améliorations.</span>
+        <span class="title">{$t.newVersion}</span>
+        <span class="message">{$t.updateMessage}</span>
       </div>
     </div>
     <div class="actions">
-      <Button variant="ghost" size="sm" onclick={close}>Plus tard</Button>
-      <Button variant="primary" size="sm" onclick={() => updateServiceWorker(true)}>
-        Mettre à jour
+      <Button variant="ghost" size="sm" onclick={close}>{$t.later}</Button>
+      <Button
+        variant="primary"
+        size="sm"
+        onclick={() => updateServiceWorker(true)}
+      >
+        {$t.update}
       </Button>
     </div>
   </div>
@@ -69,13 +74,13 @@
     border-radius: 0.75rem;
   }
 
-  .spin {
-    animation: spin 3s linear infinite;
-  }
-
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .text {
