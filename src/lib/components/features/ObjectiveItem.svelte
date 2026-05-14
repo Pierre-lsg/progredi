@@ -71,7 +71,24 @@
 
   function toggleSkip(e: Event) {
     e.stopPropagation(); if (isDeleted || isEditing) return;
-    logs.setStatus(objective.id, date, isSkipped ? null : 'skipped');
+    const nextStatus = isSkipped ? null : 'skipped';
+    logs.setStatus(objective.id, date, nextStatus);
+
+    if (nextStatus === 'skipped' && objective.frequency === 'weekly') {
+      const tomorrow = new Date(date);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+      objectives.add({
+        title: `[REPORT] ${objective.title}`,
+        category: objective.category,
+        frequency: 'once',
+        date: tomorrowStr,
+        priority: objective.priority,
+        isFavorite: false,
+        reminderTime: objective.reminderTime
+      });
+    }
   }
 
   function toggleFavorite(e: Event) {
@@ -80,11 +97,32 @@
   }
 
   function saveEdit() {
-    if (editState.title.trim()) { 
-      objectives.update(objective.id, { ...editState, title: editState.title.trim() }); 
-      isEditing = false;
-      showConfirm = false;
+    if (!editState.title.trim()) return;
+
+    const hasChangedCritical = 
+      editState.title.trim() !== objective.title ||
+      editState.category !== objective.category ||
+      editState.frequency !== objective.frequency;
+
+    // On vérifie s'il y a un historique de complétion
+    const hasHistory = $logs.some(l => l.objectiveId === objective.id && l.status === 'completed');
+
+    if (hasChangedCritical && hasHistory) {
+      // On archive l'ancienne tâche pour préserver l'historique
+      objectives.remove(objective.id);
+      // On crée la nouvelle tâche avec les modifications
+      objectives.add({
+        ...editState,
+        title: editState.title.trim(),
+        isFavorite: objective.isFavorite
+      });
+    } else {
+      // Mise à jour classique
+      objectives.update(objective.id, { ...editState, title: editState.title.trim() });
     }
+    
+    isEditing = false;
+    showConfirm = false;
   }
 
   function getFrequencyLabel(o: Objective) {

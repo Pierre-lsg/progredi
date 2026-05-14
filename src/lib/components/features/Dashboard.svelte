@@ -64,6 +64,13 @@
     allLogs: Log[],
   ) {
     const selectedDateStr = date.toISOString().split("T")[0];
+    const creationDateStr = new Date(objective.createdAt)
+      .toISOString()
+      .split("T")[0];
+
+    // Ne pas afficher si la tâche a été créée après le jour observé
+    if (selectedDateStr < creationDateStr) return false;
+
     let visible = false;
     if (objective.frequency === "daily") visible = true;
     else if (objective.frequency === "weekly") {
