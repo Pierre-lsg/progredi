@@ -433,9 +433,6 @@
     opacity: 0;
     pointer-events: none;
   }
-  .date-input-hidden {
-    display: none;
-  }
   .progress {
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -450,11 +447,6 @@
     width: 100%;
     padding: 0.5rem 0;
     touch-action: pan-y; /* Permet le scroll vertical mais bloque le scroll horizontal par défaut pour notre swipe */
-  }
-  .btn-icon.active {
-    background: var(--accent-primary);
-    color: white;
-    border-color: var(--accent-primary);
   }
   .share-mini-btn {
     background: var(--bg-secondary);
@@ -486,12 +478,6 @@
     flex: 1;
     display: flex;
     align-items: center;
-  }
-  .search-icon {
-    position: absolute;
-    left: 0.75rem;
-    color: var(--text-secondary);
-    pointer-events: none;
   }
   .search-input {
     font-size: 0.9rem;
@@ -526,12 +512,6 @@
     background-repeat: no-repeat;
     background-position: right 0.5rem center;
     background-size: 1rem;
-  }
-  .select-wrapper .select-icon {
-    position: absolute;
-    left: 0.6rem;
-    color: var(--text-secondary);
-    pointer-events: none;
   }
   .select-wrapper:last-child .filter-select {
     padding-left: 0.75rem;
