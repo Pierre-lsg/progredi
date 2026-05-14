@@ -193,6 +193,8 @@
     }
   }
 
+  let dateInput: HTMLInputElement;
+
   function handleDragStart(id: string) {
     draggingId = id;
   }
@@ -233,16 +235,17 @@
     </button>
     <div class="date-info">
       <div class="date-header">
-        <span class="date-display">
+        <button class="date-btn" onclick={() => dateInput.showPicker()}>
           {dateStr}
-        </span>
+        </button>
         <input
           type="date"
-          class="date-input-hidden"
+          bind:this={dateInput}
+          class="hidden-date-input"
           value={dateValue}
           onchange={handleDateInput}
         />
-        {#if !canShare}
+        {#if canShare}
           <button
             class="share-mini-btn"
             onclick={shareToday}
@@ -391,6 +394,7 @@
     align-items: center;
     flex-direction: row;
     gap: 0.5rem;
+    position: relative;
   }
   .date-info {
     text-align: center;
@@ -401,20 +405,29 @@
     position: relative;
     cursor: pointer;
   }
-  .date-display {
+  .date-btn {
+    background: none;
+    border: none;
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--text-primary);
     text-transform: capitalize;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+  }
+  .date-btn:hover {
+    color: var(--accent-primary);
+  }
+  .hidden-date-input {
+    position: absolute;
+    width: 0;
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
   }
   .date-input-hidden {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
+    display: none;
   }
   .progress {
     font-size: 0.875rem;
